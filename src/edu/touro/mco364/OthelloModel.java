@@ -1,6 +1,6 @@
 package edu.touro.mco364;
 
-public class OthelloModel
+public class OthelloModel implements OthelloModelInterface
 {
     private CellState [][]grid;
     private final int GRID_SIZE = 8;
@@ -24,15 +24,20 @@ public class OthelloModel
         return isLocationAvailable(row, col) && isMoveFlippable(row, col, state);
     }
 
-    boolean isMoveFlippable(int row, int col, CellState state) {
+    public boolean isMoveFlippable(int row, int col, CellState state) {
         throw new UnsupportedOperationException();
     }
 
-    boolean isLocationAvailable(int row, int col)
+    public boolean isLocationAvailable(int row, int col)
     {
         if (row < 0 || row >= GRID_SIZE)
             return false;
         return grid[row][col] == CellState.NONE;
+    }
+
+    @Override
+    public CellState getCellState(int row, int col) {
+        return null;
     }
 
 }

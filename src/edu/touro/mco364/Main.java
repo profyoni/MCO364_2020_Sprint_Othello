@@ -10,7 +10,7 @@ enum CellState {NONE, BLACK, WHITE}
 class OthelloGUI extends JFrame
 {
     private JButton button;
-    OthelloGUI(){
+    OthelloGUI(OthelloModelInterface model){
         setTitle("MCO 364");
         super.setSize(600,200);
 
@@ -34,11 +34,22 @@ class OthelloGUI extends JFrame
     }
 
 }
+interface OthelloModelInterface
+{
+    boolean makeMove(int row, int col, CellState state);
+    boolean isMoveLegal(int row, int col, CellState state);
 
+    boolean isMoveFlippable(int row, int col, CellState state) ;
+
+    boolean isLocationAvailable(int row, int col);
+    CellState getCellState(int row, int col);
+}
 
 public class Main {
     public static void main2(String[] args) {
-new OthelloGUI();
+
+        OthelloModelInterface model = new OthelloModel();
+        new OthelloGUI(model); // dpendency injection ...c-tor injection
 
     }
     public static void main(String[] args) {
@@ -52,6 +63,6 @@ new OthelloGUI();
 //            othelloModel.makeMove(row, col, othelloModel.currentPlayer());
 //
 //        }
-        new OthelloWindow();
+        new GuiWindow();
     }
 }
