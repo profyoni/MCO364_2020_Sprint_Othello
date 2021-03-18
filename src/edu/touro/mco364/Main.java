@@ -1,38 +1,91 @@
 package edu.touro.mco364;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-
-enum CellState {NONE, BLACK, WHITE}
-
 class OthelloGUI extends JFrame
 {
-    private JButton button;
-    OthelloGUI(OthelloModelInterface model){
-        setTitle("MCO 364");
-        super.setSize(600,200);
+    private OthelloModel model;
+    private JButton[][] buttons;
+    private JLabel statusBar = new JLabel(" ");
+    private JButton computerMoveButton = new JButton("Computer Go!");
+    OthelloGUI(OthelloModel model){
+        this.model = model;
+        setTitle("Othello");
+        super.setSize(600,620);
 
         this.setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
+        int size = model.GRID_SIZE;
 
-        button = new JButton("Tickle me, Elmo"); // event source
-        add(button);
-
-        button.addActionListener(new MyButtonHandler() );
-
+        JPanel panel = new JPanel();
+        this.add(panel);
+        JPanel panel2 = new JPanel();
+        panel2.setLayout(new BorderLayout());
+        this.add(panel2, BorderLayout.SOUTH);
+        panel2.add(statusBar, BorderLayout.CENTER);
+        panel2.add(computerMoveButton, BorderLayout.EAST);
+        computerMoveButton.addActionListener( ae -> {
+            Point move = model.findBestMove();;
+            CellState player = model.getCurrentPlayer();
+            int flips = model.makeMove(move.x, move.y, player, true);
+            updateGuiBoard();
+            statusBar.setText(String.format("%s went %s and flipped %d pieces", player, move, flips));
+        });
+        panel.setLayout(new GridLayout(size,size));
+        ActionListener al = new ButtonListener();
+        buttons = new MyJButton[size][size];
+        Font f = new Font("", Font.BOLD, 40);
+        for (int i=0;i<size;i++)
+        for (int j=0;j<size;j++)
+        {
+            panel.add( buttons[i][j] = new MyJButton(new Point(i,j)) );
+            buttons[i][j].addActionListener(al);
+            buttons[i][j].setFont(f);
+            buttons[i][j].setBackground(new Color(0,145,10));
+        }
+        updateGuiBoard();
         setVisible(true);
     }
 
-    class MyButtonHandler implements ActionListener
+    private int q;
+    void updateGuiBoard()
     {
-        @Override
-        public void actionPerformed(ActionEvent actionEvent) {
-            button.setText("hahahaha" + button.getText());
-
+        int size = model.GRID_SIZE;
+        for (int i=0;i<size;i++)
+        for (int j=0;j<size;j++) {
+            CellState c = model.getCellState(i,j);
+            buttons[i][j].setText(c.toIcon());
         }
     }
 
+    private class ButtonListener implements ActionListener
+    {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Point move;
+            CellState player = model.getCurrentPlayer();
+            if ( player== CellState.WHITE) {
+                MyJButton b = (MyJButton) e.getSource();
+                move = b.p;
+            }
+            else{
+                move = model.findBestMove();
+            }
+            int flips = model.makeMove(move.x, move.y, player, true);
+            updateGuiBoard();
+            statusBar.setText(String.format("%s went %s and flipped %d pieces",player, move, flips));
+        }
+    }
+    private static class MyJButton extends JButton
+    {
+        MyJButton(Point p)
+        {
+            this.p = p;
+        }
+        Point p;
+    }
 }
 interface OthelloModelInterface
 {
@@ -41,28 +94,14 @@ interface OthelloModelInterface
 
     boolean isMoveFlippable(int row, int col, CellState state) ;
 
-    boolean isLocationAvailable(int row, int col);
+    boolean isLocationInBoundsAndUnoccupied(int row, int col);
     CellState getCellState(int row, int col);
 }
 
 public class Main {
-    public static void main2(String[] args) {
-
-        OthelloModelInterface model = new OthelloModel();
-        new OthelloGUI(model); // dpendency injection ...c-tor injection
-
-    }
     public static void main(String[] args) {
-//        OthelloModel othelloModel = new OthelloModel();
-//
-//        while (! othelloModel.isGameOver())
-//        {
-//            System.out.println(othelloModel.boardToString());
-//            System.out.println(othelloModel.currentPlayer());
-//            // prompt user for Row/Col (e.g. B7)
-//            othelloModel.makeMove(row, col, othelloModel.currentPlayer());
-//
-//        }
-        new GuiWindow();
+        OthelloModel model = new OthelloModel();
+        new OthelloGUI(model); // dependency injection ...c-tor injection
     }
+
 }
